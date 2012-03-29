@@ -1,0 +1,16 @@
+Palvelukarta Objective-C API
+----------------------------
+
+These classes provide an Objective-C interface to the Helsinki City
+Service Map database throuth the Service Map REST API. More
+information about the REST API is available here:
+
+  http://www.hel.fi/palvelukarttaws/rest/index_en.html
+
+Requires SBJson:
+  http://stig.github.com/json-framework/
+
+---
+
+License: LGPL v3
+  http://www.gnu.org/licenses/lgpl.html
