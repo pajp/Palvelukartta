@@ -8,13 +8,8 @@
 #import "SBJson.h"
 #import "PalvelukarttaDelegate.h"
 
-#define PK_SERVICE_PUBLIC_TOILETS 8920
-#define PK_BASE_URL "http://localhost/palvelukarttaws/rest/v1/"
-#define PK_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v1/"
-
-
-// "http://www.hel.fi/palvelukarttaws/rest/v1/service/8920"
-// "http://www.hel.fi/palvelukarttaws/rest/v1/unit/%@"
+#define PK_V2_SERVICE_PUBLIC_TOILETS 25402
+#define PK_V2_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v2/"
 
 @interface Palvelukartta : NSObject
 {

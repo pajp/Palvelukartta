@@ -21,7 +21,7 @@ NSString* ctostr(NSURLConnection* c);
         attemptsForConnection = [[NSMutableDictionary alloc] init];
         urlForConnection = [[NSMutableDictionary alloc] init];
         remainingConnections = [[NSMutableSet alloc] init]; 
-        pkRestURL = @PK_BASE_URL;
+        pkRestURL = @PK_V2_BASE_URL;
         NSLog(@"PK object %@ init", self);
     }
     return self;
