@@ -240,5 +240,12 @@ NSString* ctostr(NSURLConnection* c) {
     return str;
 }
 
++ (NSArray*) sortedServices:(NSArray*) list {
+    return [list sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+        return [[Palvelukartta localizedStringForProperty:@"name" inUnit:obj1] localizedCaseInsensitiveCompare:
+                [Palvelukartta localizedStringForProperty:@"name" inUnit:obj2]];
+    }];
+}
+
 
 @end

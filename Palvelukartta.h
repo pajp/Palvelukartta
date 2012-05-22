@@ -37,6 +37,7 @@
 - (int) connectionsPending;
 - (NSURLConnection*) doConnection:(NSURL*) url;
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
++ (NSArray*) sortedServices:(NSArray*) list;
 
 @property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
