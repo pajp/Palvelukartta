@@ -46,7 +46,10 @@ void p(NSString* s) {
 - (void) unitLoaded:(NSDictionary*) unit {
     PRINT(@"------------------------------\n");
     PRINT(@"Name: %@\n", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit]);
-    PRINT(@"Address: %@\n", [Palvelukartta localizedStringForProperty:@"street_address" inUnit:unit]);
+    NSString* address = [Palvelukartta localizedStringForProperty:@"street_address" inUnit:unit];
+    if (address != nil) {
+        PRINT(@"Address: %@\n", address);
+    }
 }
 @end
 
