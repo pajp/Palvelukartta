@@ -33,6 +33,7 @@
 - (void) loadServices:(int) ofType;
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
+- (int) connectionsPending;
 - (NSURLConnection*) doConnection:(NSURL*) url;
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 

@@ -155,6 +155,9 @@ NSString* ctostr(NSURLConnection* c) {
     [data appendData:newdata];
 }
 
+- (int) connectionsPending {
+    return [remainingConnections count];
+}
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
