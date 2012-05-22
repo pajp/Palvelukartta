@@ -12,6 +12,7 @@
 #define PK_BASE_URL "http://localhost/palvelukarttaws/rest/v1/"
 #define PK_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v1/"
 
+#define DLOG(...) if (self.debug) NSLog(__VA_ARGS__);
 
 // "http://www.hel.fi/palvelukarttaws/rest/v1/service/8920"
 // "http://www.hel.fi/palvelukarttaws/rest/v1/unit/%@"
@@ -37,7 +38,7 @@
 - (NSURLConnection*) doConnection:(NSURL*) url;
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 
-
+@property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
 
 @end

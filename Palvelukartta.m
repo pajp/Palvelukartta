@@ -10,6 +10,7 @@
 @implementation Palvelukartta
 
 @synthesize delegate;
+@synthesize debug;
 
 NSString* ctostr(NSURLConnection* c);
 
@@ -22,13 +23,13 @@ NSString* ctostr(NSURLConnection* c);
         urlForConnection = [[NSMutableDictionary alloc] init];
         remainingConnections = [[NSMutableSet alloc] init]; 
         pkRestURL = @PK_BASE_URL;
-        NSLog(@"PK object %@ init", self);
+        DLOG(@"PK object %@ init", self);
     }
     return self;
 }
 
 - (void) dealloc {
-    NSLog(@"PK object %@ dealloc", self);
+    DLOG(@"PK object %@ dealloc", self);
     [unitForConnection release];
     [dataForConnection release];
     [attemptsForConnection release];
@@ -45,7 +46,7 @@ NSString* ctostr(NSURLConnection* c);
 - (void) cancelAll {
     NSURLConnection *connection;
     for(connection in remainingConnections){
-        NSLog(@"Cancelling URL: %@, connection %@", [urlForConnection objectForKey:ctostr(connection)], connection);
+        DLOG(@"Cancelling URL: %@, connection %@", [urlForConnection objectForKey:ctostr(connection)], connection);
         [connection cancel];
     }    
     
@@ -63,7 +64,7 @@ NSString* ctostr(NSURLConnection* c);
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:req delegate:self];
     [urlForConnection setValue:url forKey:ctostr(connection)];
     [remainingConnections addObject:connection];    
-    NSLog(@"PK %@ requesting URL %@ (connection: %@)", self, url, connection);
+    DLOG(@"PK %@ requesting URL %@ (connection: %@)", self, url, connection);
     return connection;
 }
 
@@ -74,7 +75,7 @@ NSString* ctostr(NSURLConnection* c);
                               
 - (void) loadServices:(int) ofType {
     NSURL *unitlisturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/%d", pkRestURL, ofType]];
-    NSLog(@"Requesting service URL %@", unitlisturl);
+    DLOG(@"Requesting service URL %@", unitlisturl);
 
     listConnection=[self doConnection:unitlisturl];        
 }
@@ -82,7 +83,7 @@ NSString* ctostr(NSURLConnection* c);
 - (void)connectRetry:(NSTimer*)theTimer
 {
     NSURLConnection *connection = theTimer.userInfo;
-    NSLog(@"retrying connection %@", connection);
+    DLOG(@"retrying connection %@", connection);
     NSNumber *unitId = [unitForConnection valueForKey:ctostr(connection)]; 
     NSURLConnection *newConnection = [self doConnection:[urlForConnection valueForKey:ctostr(connection)]];
     [unitForConnection setValue:unitId forKey:ctostr(newConnection)];
@@ -122,12 +123,12 @@ NSString* ctostr(NSURLConnection* c);
     NSNumber *attempts = [attemptsForConnection valueForKey:ctostr(connection)];
     NSURL *url = [urlForConnection valueForKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
-    NSLog(@"connection fail: connection: %@, attempts: %@, url: %@, error: %@", connection, attempts, url, error);
+    DLOG(@"connection fail: connection: %@, attempts: %@, url: %@, error: %@", connection, attempts, url, error);
     if ([attempts intValue] > 3) {
-        NSLog(@"giving up on url %@, %@", url, connection);
+        DLOG(@"giving up on url %@, %@", url, connection);
         [self failConnection:connection];
     } else {
-        NSLog(@"connection failed with error %@, attempts=%d", error, [attempts intValue]);
+        DLOG(@"connection failed with error %@, attempts=%d", error, [attempts intValue]);
         [NSTimer scheduledTimerWithTimeInterval:[attempts intValue]*2.0 target:self selector:@selector(connectRetry:) userInfo:connection repeats:NO];
     }
 
@@ -168,7 +169,7 @@ NSString* ctostr(NSURLConnection* c) {
         [NSException raise:@"Null data buffer" format:@"connectionDidFinishLoading but no data object for %@ exists", ctostr(connection)];
     }
     if ([data length] == 0) {
-        NSLog(@"connectionDidFinishLoading but data buffer is empty for %@ (URL: %@)", ctostr(connection),
+        DLOG(@"connectionDidFinishLoading but data buffer is empty for %@ (URL: %@)", ctostr(connection),
               [urlForConnection valueForKey:ctostr(connection)]);
         [self connection:connection didFailWithError:[NSError errorWithDomain:@"nu.dll.sv.empty-reply-error" code:1 userInfo:nil]];
         [data release];
@@ -181,7 +182,7 @@ NSString* ctostr(NSURLConnection* c) {
         NSMutableData *datacopy = [data mutableCopy];
         NSDictionary *response = [parser objectWithData:datacopy];
         NSArray *units = [response objectForKey:@"unit_ids"];
-        NSLog(@"received units: %@, delegate: %@", units, delegate);
+        DLOG(@"received units: %@, delegate: %@", units, delegate);
         if (delegate != nil) [delegate serviceListLoaded:units];
         [connection release];
         [datacopy release];
@@ -189,7 +190,7 @@ NSString* ctostr(NSURLConnection* c) {
     } else if (connection == servicesListConnection) {
         NSArray *_services = [parser objectWithData:data];
         for (int i=0; i < [_services count]; i++) {
-            NSLog(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
+            DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
         if (delegate != nil) [delegate servicesLoaded:_services];
         servicesListConnection = nil;
@@ -213,7 +214,7 @@ NSString* ctostr(NSURLConnection* c) {
 {
     NSHTTPURLResponse *hr = (NSHTTPURLResponse*) response;
     if (hr.statusCode != 200) {
-        NSLog(@"Error: HTTP response code %d", hr.statusCode);
+        DLOG(@"Error: HTTP response code %ld", hr.statusCode);
         [self failConnection:connection];
     }
     //NSNumber *u = [unitForConnection valueForKey:ctostr(connection)];
