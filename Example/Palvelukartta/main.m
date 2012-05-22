@@ -29,8 +29,14 @@ void p(NSString* s) {
 #define PRINT(...) p([NSString stringWithFormat:__VA_ARGS__])
 
 - (void) servicesLoaded:(NSArray*) list {
-    NSLog(@"servicesLoaded: %@", list);
+    [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSDictionary* unit = (NSDictionary*) obj;
+        NSArray* units = [unit objectForKey:@"unit_ids"];
+        PRINT(@"%@", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit]);
+        PRINT(@" (#%@) (%d units)\n", [unit objectForKey:@"id"], units.count);
+    }];
 }
+
 - (void) networkError:(int) unitId {
     NSLog(@"Network error loading unit %d, aborting", unitId);
     exit(1);
@@ -61,7 +67,21 @@ int main(int argc, const char * argv[])
         SimpleDelegate* del = [[SimpleDelegate alloc] init];
         del.pk = palvelukartta;
         palvelukartta.delegate = del;
-        [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS];
+        NSMutableArray* arguments = [NSMutableArray arrayWithArray:[[NSProcessInfo processInfo] arguments]];
+        [arguments removeObjectAtIndex:0];
+        if (arguments.count == 0) {
+            [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS];
+        } else {
+            if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
+                [palvelukartta loadAllServices];
+            } else if ([[arguments objectAtIndex:0] isEqual:@"--service"] && arguments.count == 2) {
+                int serviceId = [[arguments objectAtIndex:1] intValue];
+                [palvelukartta loadServices:serviceId];
+            } else {
+                PRINT(@"Illegal arguments: %@ .\n", arguments);
+                exit(1);
+            }
+        }
         while ([palvelukartta connectionsPending] > 0) {
             PRINT(@"*** Running runloop (%d connections pending) ***\n", [palvelukartta connectionsPending]);
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
