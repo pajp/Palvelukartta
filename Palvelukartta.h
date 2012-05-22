@@ -34,6 +34,7 @@
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
 - (NSURLConnection*) doConnection:(NSURL*) url;
++ (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 
 
 @property (nonatomic, retain) NSObject *delegate;

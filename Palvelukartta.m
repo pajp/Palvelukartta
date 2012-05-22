@@ -227,5 +227,14 @@ NSString* ctostr(NSURLConnection* c) {
     }
 }
 
++ (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit {
+    NSString* language = [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
+    NSString* str = [unit objectForKey:[NSString stringWithFormat:@"%@_%@", property, language]];
+    if (str == nil) {
+        str = [unit objectForKey:[NSString stringWithFormat:@"%@_fi", property]];
+    }
+    return str;
+}
+
 
 @end
