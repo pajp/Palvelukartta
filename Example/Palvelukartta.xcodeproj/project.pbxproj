@@ -38,6 +38,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3A133094156D622700A10C85 /* test.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = test.sh; sourceTree = "<group>"; };
 		3A6E0CAF1524FBED0099E2E2 /* Palvelukartta */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Palvelukartta; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A6E0CB31524FBED0099E2E2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		3A6E0CB61524FBED0099E2E2 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -114,6 +115,7 @@
 			isa = PBXGroup;
 			children = (
 				3A6E0CB61524FBED0099E2E2 /* main.m */,
+				3A133094156D622700A10C85 /* test.sh */,
 				3A6E0CBA1524FBED0099E2E2 /* Palvelukartta.1 */,
 				3A6E0CB81524FBED0099E2E2 /* Supporting Files */,
 			);
