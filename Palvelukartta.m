@@ -55,11 +55,12 @@ NSString* ctostr(NSURLConnection* c);
 - (void) loadUnit:(NSNumber*) unitIdObj {
     int unitId = [unitIdObj intValue];
     NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", pkRestURL, unitId]];
-    NSURLConnection *c = [self doConnection:uniturl];
+    NSURLConnection *c = [self newConnection:uniturl];
     [unitForConnection setValue:[NSNumber numberWithInt:unitId] forKey:ctostr(c)];
+    [c release];
 }
 
-- (NSURLConnection*) doConnection:(NSURL*) url {
+- (NSURLConnection*) newConnection:(NSURL*) url {
     NSURLRequest *req = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:60.0];
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:req delegate:self];
     [urlForConnection setValue:url forKey:ctostr(connection)];
@@ -70,14 +71,14 @@ NSString* ctostr(NSURLConnection* c);
 
 - (void) loadAllServices {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/", pkRestURL]];
-    servicesListConnection = [self doConnection:url];
+    servicesListConnection = [self newConnection:url];
 }
                               
 - (void) loadServices:(int) ofType {
     NSURL *unitlisturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/%d", pkRestURL, ofType]];
     DLOG(@"Requesting service URL %@", unitlisturl);
 
-    listConnection=[self doConnection:unitlisturl];        
+    listConnection=[self newConnection:unitlisturl];
 }
 
 - (void)connectRetry:(NSTimer*)theTimer
@@ -85,7 +86,7 @@ NSString* ctostr(NSURLConnection* c);
     NSURLConnection *connection = theTimer.userInfo;
     DLOG(@"retrying connection %@", connection);
     NSNumber *unitId = [unitForConnection valueForKey:ctostr(connection)]; 
-    NSURLConnection *newConnection = [self doConnection:[urlForConnection valueForKey:ctostr(connection)]];
+    NSURLConnection *newConnection = [self newConnection:[urlForConnection valueForKey:ctostr(connection)]];
     [unitForConnection setValue:unitId forKey:ctostr(newConnection)];
     [unitForConnection removeObjectForKey:ctostr(connection)];
     [urlForConnection removeObjectForKey:ctostr(connection)];
@@ -98,6 +99,7 @@ NSString* ctostr(NSURLConnection* c);
     }
     [attemptsForConnection removeObjectForKey:ctostr(connection)];
     [attemptsForConnection setValue:count forKey:ctostr(newConnection)];
+    [newConnection release];
     
 }
 
@@ -172,7 +174,6 @@ NSString* ctostr(NSURLConnection* c) {
         DLOG(@"connectionDidFinishLoading but data buffer is empty for %@ (URL: %@)", ctostr(connection),
               [urlForConnection valueForKey:ctostr(connection)]);
         [self connection:connection didFailWithError:[NSError errorWithDomain:@"nu.dll.sv.empty-reply-error" code:1 userInfo:nil]];
-        [data release];
         [parser release];
         [dataForConnection removeObjectForKey:ctostr(connection)];
         [remainingConnections removeObject:connection];
@@ -204,7 +205,6 @@ NSString* ctostr(NSURLConnection* c) {
             [NSException raise:@"unexpected" format:@"Connection not recognized: %@", connection];            
         }
     }
-    [data release];
     [parser release];
     [dataForConnection setValue:nil forKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
@@ -226,6 +226,7 @@ NSString* ctostr(NSURLConnection* c) {
     } else {
         data = [[NSMutableData alloc] init];
         [dataForConnection setValue:data forKey:ctostr(connection)];
+        [data release];
         //NSLog(@"created new data buffer for connection %@", ctostr(connection));
         
     }

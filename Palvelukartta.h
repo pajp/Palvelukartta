@@ -9,7 +9,6 @@
 #import "PalvelukarttaDelegate.h"
 
 #define PK_SERVICE_PUBLIC_TOILETS 8920
-#define PK_BASE_URL "http://localhost/palvelukarttaws/rest/v1/"
 #define PK_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v1/"
 
 #define DLOG(...) if (self.debug) NSLog(__VA_ARGS__);
@@ -35,7 +34,7 @@
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
 - (int) connectionsPending;
-- (NSURLConnection*) doConnection:(NSURL*) url;
+- (NSURLConnection*) newConnection:(NSURL*) url;
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 + (NSArray*) sortedServices:(NSArray*) list;
 
