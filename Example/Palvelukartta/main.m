@@ -70,12 +70,15 @@ int main(int argc, const char * argv[])
         NSMutableArray* arguments = [NSMutableArray arrayWithArray:[[NSProcessInfo processInfo] arguments]];
         [arguments removeObjectAtIndex:0];
         if (arguments.count == 0) {
+            PRINT(@"Requesting information about public restrooms...\n");
             [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS];
         } else {
             if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
+                PRINT(@"Requesting all services...\n");
                 [palvelukartta loadAllServices];
             } else if ([[arguments objectAtIndex:0] isEqual:@"--service"] && arguments.count == 2) {
                 int serviceId = [[arguments objectAtIndex:1] intValue];
+                PRINT(@"Requesting information about service %d...\n", serviceId);
                 [palvelukartta loadServices:serviceId];
             } else {
                 PRINT(@"Illegal arguments: %@ .\n", arguments);
