@@ -83,7 +83,7 @@ int main(int argc, const char * argv[])
             }
         }
         while ([palvelukartta connectionsPending] > 0) {
-            PRINT(@"*** Running runloop (%d connections pending) ***\n", [palvelukartta connectionsPending]);
+            if (palvelukartta.debug) PRINT(@"*** Running runloop (%d connections pending) ***\n", [palvelukartta connectionsPending]);
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
         }
         [palvelukartta release];
