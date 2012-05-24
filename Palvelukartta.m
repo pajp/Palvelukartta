@@ -5,6 +5,7 @@
 //  Copyright (c) 2011 Rasmus Sten. All rights reserved.
 //
 
+#include <stdlib.h>
 #import "Palvelukartta.h"
 
 @implementation Palvelukartta
@@ -23,6 +24,9 @@ NSString* ctostr(NSURLConnection* c);
         urlForConnection = [[NSMutableDictionary alloc] init];
         remainingConnections = [[NSMutableSet alloc] init]; 
         pkRestURL = @PK_BASE_URL;
+        if (getenv("PK_DEBUG") != NULL) {
+            self.debug = YES;
+        }
         DLOG(@"PK object %@ init", self);
     }
     return self;
