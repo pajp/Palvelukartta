@@ -37,7 +37,7 @@
 - (NSURLConnection*) newConnection:(NSURL*) url;
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 + (NSArray*) sortedServices:(NSArray*) list;
-
++ (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services;
 @property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
 

@@ -194,9 +194,7 @@ NSString* ctostr(NSURLConnection* c) {
         listConnection = nil;
     } else if (connection == servicesListConnection) {
         NSArray *_services = [parser objectWithData:data];
-        for (int i=0; i < [_services count]; i++) {
-            DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
-        }
+        DLOG(@"%@", _services);
         if (delegate != nil) [delegate servicesLoaded:_services];
         servicesListConnection = nil;
     } else {
@@ -249,6 +247,38 @@ NSString* ctostr(NSURLConnection* c) {
     return [list sortedArrayUsingComparator:^NSComparisonResult(id obj1, id obj2) {
         return [[Palvelukartta localizedStringForProperty:@"name" inUnit:obj1] localizedCaseInsensitiveCompare:
                 [Palvelukartta localizedStringForProperty:@"name" inUnit:obj2]];
+    }];
+}
+
++ (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services {
+    // first populate a dictionary mapping service IDs to 
+    // the service dict objects, by enumerating the list
+    [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        //NSLog(@"storing service id %@: %@", [obj valueForKey:@"id"], obj);
+        [services setValue:obj forKey:[NSString stringWithFormat:@"%@", [((NSDictionary*) obj) valueForKey:@"id"]]];
+    }];
+    // then enumerate the list again, and for each service, lookup the
+    // corresponding dict form the mapping generated above, and add that
+    // dict as a value in the first service dict
+    [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        NSDictionary* srv = (NSDictionary*) obj;
+        NSMutableArray* children = [srv valueForKey:@"children"];
+        if (children == nil) {
+            children = [[NSMutableArray alloc] init];
+            [srv setValue:children forKey:@"children"];
+            [children release];
+        }
+        NSArray* childIds = (NSArray*) [srv valueForKey:@"child_ids"];
+        if (childIds != nil) {
+            [childIds enumerateObjectsUsingBlock:^(id childid, NSUInteger idx, BOOL *stop) {
+                NSDictionary* child = [services valueForKey:[NSString stringWithFormat:@"%@", childid]];
+                if (child != nil) {
+                    [children addObject:child];
+                } else {
+                    NSLog(@"no dict found for id %@", childid);
+                }
+            }];
+        }
     }];
 }
 

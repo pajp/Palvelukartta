@@ -28,13 +28,36 @@ void p(NSString* s) {
 
 #define PRINT(...) p([NSString stringWithFormat:__VA_ARGS__])
 
-- (void) servicesLoaded:(NSArray*) list {
-    [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSDictionary* unit = (NSDictionary*) obj;
-        NSArray* units = [unit objectForKey:@"unit_ids"];
-        PRINT(@"%@", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit]);
-        PRINT(@" (#%@) (%d units)\n", [unit objectForKey:@"id"], units.count);
+void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
+    NSString* idStr = [NSString stringWithFormat:@"%@", [srv valueForKey:@"id"]];
+    if ([seen containsObject:idStr]) {
+        return;
+    }
+    [seen addObject:idStr];
+    for (int i=0; i < depth; i++) {
+        if (i == 0) printf("  +-");
+        else printf("--");
+    }
+    if (depth > 0) printf(">  ");
+    else printf("  ");
+    PRINT(@"%@ (#%@)\n", [Palvelukartta localizedStringForProperty:@"name" inUnit:srv], idStr);
+    NSArray* children = (NSArray*) [srv objectForKey:@"children"];
+
+    [children enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        printService(obj, seen, depth+1);
     }];
+}
+
+- (void) servicesLoaded:(NSArray*) list {
+    NSMutableDictionary *services = [[NSMutableDictionary alloc] init];
+    [Palvelukartta populateServiceChildren:list withIdMap:services];
+    NSMutableSet* displayed = [[NSMutableSet alloc] initWithCapacity:list.count];
+
+    [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        printService(obj, displayed, 0);
+    }];
+    [displayed release];
+    [services release];
 }
 
 - (void) networkError:(int) unitId {
@@ -63,7 +86,7 @@ int main(int argc, const char * argv[])
 {
 
     @autoreleasepool {
-        Palvelukartta *palvelukartta = [[Palvelukartta alloc] init];        
+        Palvelukartta *palvelukartta = [[Palvelukartta alloc] init];
         SimpleDelegate* del = [[SimpleDelegate alloc] init];
         del.pk = palvelukartta;
         palvelukartta.delegate = del;
