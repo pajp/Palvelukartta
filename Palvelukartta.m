@@ -258,7 +258,7 @@ NSString* ctostr(NSURLConnection* c) {
         [services setValue:obj forKey:[NSString stringWithFormat:@"%@", [((NSDictionary*) obj) valueForKey:@"id"]]];
     }];
     // then enumerate the list again, and for each service, lookup the
-    // corresponding dict form the mapping generated above, and add that
+    // corresponding dict from the mapping generated above, and add that
     // dict as a value in the first service dict
     [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         NSDictionary* srv = (NSDictionary*) obj;
