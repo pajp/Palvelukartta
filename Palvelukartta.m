@@ -251,7 +251,7 @@ NSString* ctostr(NSURLConnection* c) {
 }
 
 + (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services {
-    // first populate a dictionary mapping service IDs to 
+    // first populate a dictionary mapping service IDs to
     // the service dict objects, by enumerating the list
     [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         //NSLog(@"storing service id %@: %@", [obj valueForKey:@"id"], obj);
