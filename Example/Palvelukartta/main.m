@@ -120,6 +120,9 @@ int main(int argc, const char * argv[])
                 int serviceId = [[arguments objectAtIndex:1] intValue];
                 PRINT(@"Requesting information about service %d...\n", serviceId);
                 [palvelukartta loadServices:serviceId];
+            } else if ([[arguments objectAtIndex:0] isEqual:@"--unit"] && arguments.count == 2) {
+                PRINT(@"Requesting information about unit %d...\n", [[arguments objectAtIndex:1] intValue]);
+                [palvelukartta loadUnit:[NSNumber numberWithInt:[[arguments objectAtIndex:1] intValue]]];
             } else {
                 PRINT(@"Illegal arguments: %@ .\n", arguments);
                 exit(1);

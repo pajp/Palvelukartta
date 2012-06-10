@@ -16,6 +16,7 @@
 .Nm
 .Op Fl all-services      \" [--all-services]
 .Op Fl service Ar id     \" [--service id] 
+.Op Fl unit Ar id        \" [--unit id]
 .Sh DESCRIPTION          \" Section Header - required - don't modify
 Query services from the Helsinki city public service database.
 Run with no options, the program returns a list of all public rest rooms and
@@ -26,6 +27,9 @@ Options:
 List all service categories alphabetically
 .It Fl -service Ar id
 Returns all service units for category
+.Ar id
+.It Fl -unit Ar id
+Prints information about unit
 .Ar id
 .El                      \" Ends the list
 .Pp
