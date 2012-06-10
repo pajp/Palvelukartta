@@ -19,7 +19,6 @@
 @interface Palvelukartta : NSObject
 {
     NSObject <PalvelukarttaDelegate> *delegate;
-    NSString *pkRestURL;
     NSURLConnection *listConnection;
     NSURLConnection *servicesListConnection;
     NSMutableDictionary *unitForConnection;
@@ -40,5 +39,6 @@
 + (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services;
 @property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
+@property (nonatomic, retain) NSString *pkRestURL;
 
 @end

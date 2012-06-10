@@ -12,6 +12,7 @@
 
 @synthesize delegate;
 @synthesize debug;
+@synthesize pkRestURL;
 
 NSString* ctostr(NSURLConnection* c);
 
@@ -23,7 +24,10 @@ NSString* ctostr(NSURLConnection* c);
         attemptsForConnection = [[NSMutableDictionary alloc] init];
         urlForConnection = [[NSMutableDictionary alloc] init];
         remainingConnections = [[NSMutableSet alloc] init]; 
-        pkRestURL = @PK_BASE_URL;
+        self.pkRestURL = @PK_BASE_URL;
+        if (getenv("PK_BASE_URL") != NULL) {
+            self.pkRestURL = [NSString stringWithCString:getenv("PK_BASE_URL") encoding:NSUTF8StringEncoding];
+        }
         if (getenv("PK_DEBUG") != NULL) {
             self.debug = YES;
         }
@@ -41,7 +45,6 @@ NSString* ctostr(NSURLConnection* c);
     [servicesListConnection release];
     [remainingConnections release];
     [listConnection release];
-    [pkRestURL release];
     [delegate release];
     
     [super dealloc];
@@ -58,7 +61,7 @@ NSString* ctostr(NSURLConnection* c);
 
 - (void) loadUnit:(NSNumber*) unitIdObj {
     int unitId = [unitIdObj intValue];
-    NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", pkRestURL, unitId]];
+    NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", self.pkRestURL, unitId]];
     NSURLConnection *c = [self newConnection:uniturl];
     [unitForConnection setValue:[NSNumber numberWithInt:unitId] forKey:ctostr(c)];
     [c release];
@@ -74,12 +77,12 @@ NSString* ctostr(NSURLConnection* c);
 }
 
 - (void) loadAllServices {
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/", pkRestURL]];
+    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/", self.pkRestURL]];
     servicesListConnection = [self newConnection:url];
 }
                               
 - (void) loadServices:(int) ofType {
-    NSURL *unitlisturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/%d", pkRestURL, ofType]];
+    NSURL *unitlisturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/%d", self.pkRestURL, ofType]];
     DLOG(@"Requesting service URL %@", unitlisturl);
 
     listConnection=[self newConnection:unitlisturl];
