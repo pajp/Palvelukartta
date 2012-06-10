@@ -74,11 +74,28 @@ void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
 
 - (void) unitLoaded:(NSDictionary*) unit {
     PRINT(@"------------------------------\n");
+    if (pk.debug) {
+        [unit enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            PRINT(@"%@: %@\n", key, obj);
+        }];
+    }
     PRINT(@"Name: %@\n", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit]);
     NSString* address = [Palvelukartta localizedStringForProperty:@"street_address" inUnit:unit];
     if (address != nil) {
         PRINT(@"Address: %@\n", address);
     }
+    NSArray* connections = (NSArray *) [unit objectForKey:@"connections"];
+    NSArray* localizedKeys = [NSArray arrayWithObjects:@"name", @"www", nil];
+    [connections enumerateObjectsUsingBlock:^(id connection, NSUInteger idx0, BOOL *stop) {
+        [localizedKeys enumerateObjectsUsingBlock:^(id key, NSUInteger idx, BOOL *stop) {
+            NSString *text = [Palvelukartta localizedStringForProperty:key inUnit:connection];
+            if (text == nil) return;
+            if (idx == 0) PRINT(@"\n\t");
+            if (idx == 1) PRINT(@": ");
+            PRINT(@"%@", text);
+        }];
+    }];
+    PRINT(@"\n");
 }
 @end
 
