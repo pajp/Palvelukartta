@@ -26,7 +26,9 @@ void p(NSString* s) {
     printf("%s", [s UTF8String]);
 }
 
-#define PRINT(...) p([NSString stringWithFormat:__VA_ARGS__])
+BOOL quiet = NO;
+
+#define PRINT(...) if (!quiet) p([NSString stringWithFormat:__VA_ARGS__])
 
 void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
     NSString* idStr = [NSString stringWithFormat:@"%@", [srv valueForKey:@"id"]];
@@ -109,6 +111,12 @@ int main(int argc, const char * argv[])
         palvelukartta.delegate = del;
         NSMutableArray* arguments = [NSMutableArray arrayWithArray:[[NSProcessInfo processInfo] arguments]];
         [arguments removeObjectAtIndex:0];
+        if (arguments.count == 1) {
+            if ([[arguments objectAtIndex:0] isEqual:@"--quiet"]) {
+                quiet = YES;
+                [arguments removeObjectAtIndex:0];
+            }
+        }
         if (arguments.count == 0) {
             PRINT(@"Requesting information about public restrooms...\n");
             [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS];
