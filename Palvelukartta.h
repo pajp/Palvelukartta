@@ -5,7 +5,6 @@
 //  Copyright (c) 2011-2012 Rasmus Sten. All rights reserved.
 //
 
-#import "SBJson.h"
 #import "PalvelukarttaDelegate.h"
 
 #define PK_SERVICE_PUBLIC_TOILETS 8920

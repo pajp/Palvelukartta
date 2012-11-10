@@ -158,7 +158,7 @@ NSString* ctostr(NSURLConnection* c) {
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    SBJsonParser *parser = [[SBJsonParser alloc] init];
+    NSError *error;
     NSData *data = [dataForConnection objectForKey:ctostr(connection)];
     //NSLog(@"connectionDidFinishLoading:%@ (%@)", connection, ctostr(connection));
     if (!data) {
@@ -168,15 +168,17 @@ NSString* ctostr(NSURLConnection* c) {
         NSLog(@"connectionDidFinishLoading but data buffer is empty for %@ (URL: %@)", ctostr(connection),
               [urlForConnection valueForKey:ctostr(connection)]);
         [self connection:connection didFailWithError:[NSError errorWithDomain:@"nu.dll.sv.empty-reply-error" code:1 userInfo:nil]];
-        [data release];
-        [parser release];
         [dataForConnection removeObjectForKey:ctostr(connection)];
         [remainingConnections removeObject:connection];
         return;
     }
+    NSObject *_response = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (error != NULL) {
+        NSLog(@"JSON deserialization error: %@", error);
+    }
     if (connection == listConnection) {
         NSMutableData *datacopy = [data mutableCopy];
-        NSDictionary *response = [parser objectWithData:datacopy];
+        NSDictionary *response = (NSDictionary*) _response;
         NSArray *units = [response objectForKey:@"unit_ids"];
         NSLog(@"received units: %@, delegate: %@", units, delegate);
         if (delegate != nil) [delegate serviceListLoaded:units];
@@ -184,7 +186,7 @@ NSString* ctostr(NSURLConnection* c) {
         [datacopy release];
         listConnection = nil;
     } else if (connection == servicesListConnection) {
-        NSArray *_services = [parser objectWithData:data];
+        NSArray *_services = (NSArray*) _response;
         for (int i=0; i < [_services count]; i++) {
             NSLog(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
@@ -193,15 +195,13 @@ NSString* ctostr(NSURLConnection* c) {
     } else {
         NSNumber *unitId = [unitForConnection objectForKey:[NSString stringWithFormat:@"%p", connection]];
         if (unitId) {
-            NSDictionary *response = [parser objectWithData:data];
+            NSDictionary *response = (NSDictionary*) _response;
             if (delegate != nil) [delegate unitLoaded:response];
             //NSLog(@"Unit loaded, remaining: %@", remainingObjects);
         } else {
             [NSException raise:@"unexpected" format:@"Connection not recognized: %@", connection];            
         }
     }
-    [data release];
-    [parser release];
     [dataForConnection setValue:nil forKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
 }
