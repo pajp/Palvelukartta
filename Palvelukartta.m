@@ -73,7 +73,6 @@ NSString* ctostr(NSURLConnection* c);
     [urlForConnection setValue:url forKey:ctostr(connection)];
     [remainingConnections addObject:connection];    
     DLOG(@"PK %@ requesting URL %@ (connection: %@)", self, url, connection);
-    [connection autorelease];
     return connection;
 }
 
