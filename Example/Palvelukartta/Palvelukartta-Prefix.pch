@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'Palvelukartta' target in the 'Palvelukartta' project
+//
+
+#ifdef __OBJC__
+    #import <Foundation/Foundation.h>
+#endif

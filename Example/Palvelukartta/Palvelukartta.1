@@ -1,0 +1,57 @@
+.\"Modified from man(1) of FreeBSD, the NetBSD mdoc.template, and mdoc.samples.
+.\"See Also:
+.\"man mdoc.samples for a complete listing of options
+.\"man mdoc for the short list of editing options
+.\"/usr/share/misc/mdoc.template
+.Dd 2012-03-29               \" DATE 
+.Dt Palvelukartta 1      \" Program name and manual section number 
+.Os Darwin
+.Sh NAME                 \" Section Header - required - don't modify 
+.Nm Palvelukartta
+.\" The following lines are read in generating the apropos(man -k) database. Use only key
+.\" words here as the database is built based on the words here and in the .ND line. 
+.\" Use .Nm macro to designate other names for the documented program.
+.Nd Query the Helsinki city public service database (Palvelukartta)
+.Sh SYNOPSIS             \" Section Header - required - don't modify
+.Nm
+.Op Fl all-services      \" [--all-services]
+.Op Fl service Ar id     \" [--service id] 
+.Op Fl unit Ar id        \" [--unit id]
+.Sh DESCRIPTION          \" Section Header - required - don't modify
+Query services from the Helsinki city public service database.
+Run with no options, the program returns a list of all public rest rooms and
+their address.
+Options:
+.Bl -tag -width -indent  \" Differs from above in tag removed 
+.It Fl -all-services
+List all service categories alphabetically
+.It Fl -service Ar id
+Returns all service units for category
+.Ar id
+.It Fl -unit Ar id
+Prints information about unit
+.Ar id
+.El                      \" Ends the list
+.Pp
+.\" .Sh ENVIRONMENT      \" May not be needed
+.\" .Bl -tag -width "ENV_VAR_1" -indent \" ENV_VAR_1 is width of the string ENV_VAR_1
+.\" .It Ev ENV_VAR_1
+.\" Description of ENV_VAR_1
+.\" .It Ev ENV_VAR_2
+.\" Description of ENV_VAR_2
+.\" .El                      
+.\" .Sh DIAGNOSTICS       \" May not be needed
+.\" .Bl -diag
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .It Diagnostic Tag
+.\" Diagnostic informtion here.
+.\" .El
+.Sh SEE ALSO 
+.\" List links in ascending order by section, alphabetically within a section.
+.\" Please do not reference files that do not exist without filing a bug report
+Helsinki Service Map - http://www.hel.fi/palvelukartta/
+.Pp
+Helsinki Service Map REST API - http://www.hel.fi/palvelukarttaws/rest/
+.\" .Sh BUGS              \" Document known, unremedied bugs 
+.\" .Sh HISTORY           \" Document history if command behaves in a unique manner

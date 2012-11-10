@@ -2,7 +2,7 @@ Palvelukartta Objective-C API
 ----------------------------
 
 These classes provide an Objective-C interface to the Helsinki City
-Service Map database throuth the Service Map REST API. More
+Service Map database through the Service Map REST API. More
 information about the REST API is available here:
 
   http://www.hel.fi/palvelukarttaws/rest/index_en.html
@@ -10,6 +10,8 @@ information about the REST API is available here:
 Requires SBJson:
   http://stig.github.com/json-framework/
 
+The repo also includes a sample Xcode project for a simple command
+line tool to query the API. 
 ---
 
 License: LGPL v3

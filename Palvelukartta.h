@@ -8,9 +8,9 @@
 #import "PalvelukarttaDelegate.h"
 
 #define PK_SERVICE_PUBLIC_TOILETS 8920
-#define PK_BASE_URL "http://localhost/palvelukarttaws/rest/v1/"
 #define PK_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v1/"
 
+#define DLOG(...) if (self.debug) NSLog(__VA_ARGS__);
 
 // "http://www.hel.fi/palvelukarttaws/rest/v1/service/8920"
 // "http://www.hel.fi/palvelukarttaws/rest/v1/unit/%@"
@@ -18,7 +18,6 @@
 @interface Palvelukartta : NSObject
 {
     NSObject <PalvelukarttaDelegate> *delegate;
-    NSString *pkRestURL;
     NSURLConnection *listConnection;
     NSURLConnection *servicesListConnection;
     NSMutableDictionary *unitForConnection;
@@ -32,9 +31,13 @@
 - (void) loadServices:(int) ofType;
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
-- (NSURLConnection*) doConnection:(NSURL*) url;
-
-
+- (unsigned long) connectionsPending;
+- (NSURLConnection*) newConnection:(NSURL*) url;
++ (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
++ (NSArray*) sortedServices:(NSArray*) list;
++ (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services;
+@property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
+@property (nonatomic, retain) NSString *pkRestURL;
 
 @end
