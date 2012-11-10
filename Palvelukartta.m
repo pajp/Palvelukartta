@@ -171,7 +171,7 @@ NSString* ctostr(NSURLConnection* c) {
 
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection
 {
-    NSError *error;
+    NSError *error = nil;
     NSData *data = [dataForConnection objectForKey:ctostr(connection)];
     //NSLog(@"connectionDidFinishLoading:%@ (%@)", connection, ctostr(connection));
     if (!data) {
@@ -187,7 +187,7 @@ NSString* ctostr(NSURLConnection* c) {
         return;
     }
     NSObject *_response = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-    if (error != NULL) {
+    if (!_response) {
         NSLog(@"JSON deserialization error: %@", error);
     }
     if (connection == listConnection) {
