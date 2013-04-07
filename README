@@ -7,9 +7,6 @@ information about the REST API is available here:
 
   http://www.hel.fi/palvelukarttaws/rest/index_en.html
 
-Requires SBJson:
-  http://stig.github.com/json-framework/
-
 The repo also includes a sample Xcode project for a simple command
 line tool to query the API. 
 ---
