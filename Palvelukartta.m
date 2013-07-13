@@ -179,15 +179,16 @@ NSString* ctostr(NSURLConnection* c) {
         NSLog(@"JSON deserialization error: %@", error);
     }
     if (connection == listConnection) {
-        NSDictionary *response = (NSDictionary*) _response;
+        NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
         NSArray *units = [response objectForKey:@"unit_ids"];
         DLOG(@"received units: %@, delegate: %@", units, delegate);
         if (delegate != nil) [delegate serviceListLoaded:units];
 
         listConnection = nil;
     } else if (connection == servicesListConnection) {
-        NSArray *_services = (NSArray*) _response;
+        NSMutableArray* _services = [NSMutableArray arrayWithArray:(NSArray*) _response];
         for (int i=0; i < [_services count]; i++) {
+            _services[i] = [NSMutableDictionary dictionaryWithDictionary:_services[i]];
             DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
         if (delegate != nil) [delegate servicesLoaded:_services];
@@ -195,7 +196,7 @@ NSString* ctostr(NSURLConnection* c) {
     } else {
         NSNumber *unitId = [unitForConnection objectForKey:[NSString stringWithFormat:@"%p", connection]];
         if (unitId) {
-            NSDictionary *response = (NSDictionary*) _response;
+            NSMutableDictionary *response =  [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
             if (delegate != nil) [delegate unitLoaded:response];
             //NSLog(@"Unit loaded, remaining: %@", remainingObjects);
         } else {
@@ -211,7 +212,7 @@ NSString* ctostr(NSURLConnection* c) {
 {
     NSHTTPURLResponse *hr = (NSHTTPURLResponse*) response;
     if (hr.statusCode != 200) {
-        DLOG(@"Error: HTTP response code %d", hr.statusCode);
+        DLOG(@"Error: HTTP response code %ld", (long)hr.statusCode);
         [self failConnection:connection];
     }
     //NSNumber *u = [unitForConnection valueForKey:ctostr(connection)];
