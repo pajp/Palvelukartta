@@ -38,16 +38,6 @@ NSString* ctostr(NSURLConnection* c);
 
 - (void) dealloc {
     DLOG(@"PK object %@ dealloc", self);
-    [unitForConnection release];
-    [dataForConnection release];
-    [attemptsForConnection release];
-    [urlForConnection release];
-    [servicesListConnection release];
-    [remainingConnections release];
-    [listConnection release];
-    [delegate release];
-    
-    [super dealloc];
 }
 
 - (void) cancelAll {
@@ -64,7 +54,6 @@ NSString* ctostr(NSURLConnection* c);
     NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", self.pkRestURL, unitId]];
     NSURLConnection *c = [self newConnection:uniturl];
     [unitForConnection setValue:[NSNumber numberWithInt:unitId] forKey:ctostr(c)];
-    [c release];
 }
 
 - (NSURLConnection*) newConnection:(NSURL*) url {
@@ -106,7 +95,6 @@ NSString* ctostr(NSURLConnection* c);
     }
     [attemptsForConnection removeObjectForKey:ctostr(connection)];
     [attemptsForConnection setValue:count forKey:ctostr(newConnection)];
-    [newConnection release];
     
 }
 
@@ -191,13 +179,11 @@ NSString* ctostr(NSURLConnection* c) {
         NSLog(@"JSON deserialization error: %@", error);
     }
     if (connection == listConnection) {
-        NSMutableData *datacopy = [data mutableCopy];
         NSDictionary *response = (NSDictionary*) _response;
         NSArray *units = [response objectForKey:@"unit_ids"];
         DLOG(@"received units: %@, delegate: %@", units, delegate);
         if (delegate != nil) [delegate serviceListLoaded:units];
-        [connection release];
-        [datacopy release];
+
         listConnection = nil;
     } else if (connection == servicesListConnection) {
         NSArray *_services = (NSArray*) _response;
@@ -225,7 +211,7 @@ NSString* ctostr(NSURLConnection* c) {
 {
     NSHTTPURLResponse *hr = (NSHTTPURLResponse*) response;
     if (hr.statusCode != 200) {
-        DLOG(@"Error: HTTP response code %ld", hr.statusCode);
+        DLOG(@"Error: HTTP response code %d", hr.statusCode);
         [self failConnection:connection];
     }
     //NSNumber *u = [unitForConnection valueForKey:ctostr(connection)];
@@ -237,7 +223,6 @@ NSString* ctostr(NSURLConnection* c) {
     } else {
         data = [[NSMutableData alloc] init];
         [dataForConnection setValue:data forKey:ctostr(connection)];
-        [data release];
         //NSLog(@"created new data buffer for connection %@", ctostr(connection));
         
     }
@@ -275,7 +260,6 @@ NSString* ctostr(NSURLConnection* c) {
         if (children == nil) {
             children = [[NSMutableArray alloc] init];
             [srv setValue:children forKey:@"children"];
-            [children release];
         }
         NSArray* childIds = (NSArray*) [srv valueForKey:@"child_ids"];
         if (childIds != nil) {

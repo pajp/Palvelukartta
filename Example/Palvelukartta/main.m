@@ -58,8 +58,7 @@ void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
     [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         printService(obj, displayed, 0);
     }];
-    [displayed release];
-    [services release];
+
 }
 
 - (void) networkError:(int) unitId {
@@ -140,8 +139,6 @@ int main(int argc, const char * argv[])
             if (palvelukartta.debug) PRINT(@"*** Running runloop (%ld connections pending) ***\n", [palvelukartta connectionsPending]);
             [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.2]];
         }
-        [palvelukartta release];
-        [del release];
         PRINT(@"------------------------------\nAll done!\n");
         
     }
