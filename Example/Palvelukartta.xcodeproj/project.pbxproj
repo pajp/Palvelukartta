@@ -35,7 +35,6 @@
 		3A6E0CBA1524FBED0099E2E2 /* Palvelukartta.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = Palvelukartta.1; sourceTree = "<group>"; };
 		3A6E0CC51524FC520099E2E2 /* Palvelukartta.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Palvelukartta.h; path = ../../Palvelukartta.h; sourceTree = "<group>"; };
 		3A6E0CC61524FC520099E2E2 /* Palvelukartta.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = Palvelukartta.m; path = ../../Palvelukartta.m; sourceTree = "<group>"; };
-		3A6E0CC71524FC520099E2E2 /* PalvelukarttaDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PalvelukarttaDelegate.h; path = ../../PalvelukarttaDelegate.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,7 +90,6 @@
 			children = (
 				3A6E0CC51524FC520099E2E2 /* Palvelukartta.h */,
 				3A6E0CC61524FC520099E2E2 /* Palvelukartta.m */,
-				3A6E0CC71524FC520099E2E2 /* PalvelukarttaDelegate.h */,
 				3A6E0CB91524FBED0099E2E2 /* Palvelukartta-Prefix.pch */,
 			);
 			name = "Supporting Files";

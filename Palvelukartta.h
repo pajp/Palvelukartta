@@ -5,8 +5,6 @@
 //  Copyright (c) 2011-2012 Rasmus Sten. All rights reserved.
 //
 
-#import "PalvelukarttaDelegate.h"
-
 #define PK_SERVICE_PUBLIC_TOILETS 8920
 #define PK_BASE_URL "http://www.hel.fi/palvelukarttaws/rest/v1/"
 
@@ -17,7 +15,6 @@
 
 @interface Palvelukartta : NSObject
 {
-    NSObject <PalvelukarttaDelegate> *delegate;
     NSURLConnection *listConnection;
     NSURLConnection *servicesListConnection;
     NSMutableDictionary *unitForConnection;
@@ -30,7 +27,7 @@
 
 - (void) loadAllServices:(void (^) (NSArray*, NSError*)) block;
 - (void) loadServices:(int) ofType withBlock:(void (^) (NSArray*, NSError*)) block;
-- (void) loadUnit:(NSNumber*) unitId;
+- (void) loadUnit:(NSNumber*) unitId withBlock:(void (^) (NSDictionary*, NSNumber*, NSError*)) block;
 - (void) cancelAll;
 - (unsigned long) connectionsPending;
 - (NSURLConnection*) newConnection:(NSURL*) url;

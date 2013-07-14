@@ -10,7 +10,6 @@
 
 @implementation Palvelukartta
 
-@synthesize delegate;
 @synthesize debug;
 @synthesize pkRestURL;
 
@@ -50,11 +49,12 @@ NSString* ctostr(NSURLConnection* c);
     
 }
 
-- (void) loadUnit:(NSNumber*) unitIdObj {
+- (void) loadUnit:(NSNumber*) unitIdObj withBlock:(void (^)(NSDictionary*, NSNumber*, NSError *))block {
     int unitId = [unitIdObj intValue];
     NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", self.pkRestURL, unitId]];
     NSURLConnection *c = [self newConnection:uniturl];
     [unitForConnection setValue:[NSNumber numberWithInt:unitId] forKey:ctostr(c)];
+    callbackForConnection[ctostr(c)] = block;
 }
 
 - (NSURLConnection*) newConnection:(NSURL*) url {
@@ -117,18 +117,20 @@ NSString* ctostr(NSURLConnection* c);
     [attemptsForConnection setValue:nil forKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
 
-    void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
-    if (callback != nil) {
-        DLOG(@"calling callback %@", callback);
-        callback(nil, error);
-        [callbackForConnection removeObjectForKey:ctostr(connection)];
-    }
-
     if (unit == nil) {
-        if (delegate != nil) [delegate networkError:-1];
+        void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+        if (callback != nil) {
+            DLOG(@"calling callback %@", callback);
+            callback(nil, error);
+        }
     } else {
-        if (delegate != nil) [delegate networkError:[unit intValue]];
+        void (^callback)(NSArray*, NSNumber*, NSError*) = callbackForConnection[ctostr(connection)];
+        if (callback != nil) {
+            DLOG(@"calling callback %@", callback);
+            callback(nil, unit, error);
+        }
     }
+    [callbackForConnection removeObjectForKey:ctostr(connection)];
 }
 
 
@@ -185,33 +187,35 @@ NSString* ctostr(NSURLConnection* c) {
         NSLog(@"JSON deserialization error: %@", error);
     }
     if (connection == listConnection) {
+        void (^callback)(NSObject*, NSError*) = callbackForConnection[ctostr(connection)];
         NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
         NSArray *units = [response objectForKey:@"unit_ids"];
-        void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
         DLOG(@"received units: %@, callback: %@", units, callback);
         callback(units, nil);
-        [callbackForConnection removeObjectForKey:ctostr(connection)];
         listConnection = nil;
     } else if (connection == servicesListConnection) {
+        void (^callback)(NSObject*, NSError*) = callbackForConnection[ctostr(connection)];
         NSMutableArray* _services = [NSMutableArray arrayWithArray:(NSArray*) _response];
         for (int i=0; i < [_services count]; i++) {
             _services[i] = [NSMutableDictionary dictionaryWithDictionary:_services[i]];
             DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
-        void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+
         [callbackForConnection removeObjectForKey:ctostr(connection)];
         callback(_services, nil);
         servicesListConnection = nil;
     } else {
-        NSNumber *unitId = [unitForConnection objectForKey:[NSString stringWithFormat:@"%p", connection]];
+        void (^callback)(NSDictionary*, NSNumber*, NSError*) = callbackForConnection[ctostr(connection)];
+        NSNumber *unitId = [unitForConnection objectForKey:ctostr(connection)];
         if (unitId) {
             NSMutableDictionary *response =  [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
-            if (delegate != nil) [delegate unitLoaded:response];
-            //NSLog(@"Unit loaded, remaining: %@", remainingObjects);
+            DLOG(@"Unit loaded callback: %@", callback);
+            callback(response, unitId, nil);
         } else {
             [NSException raise:@"unexpected" format:@"Connection not recognized: %@", connection];            
         }
     }
+    [callbackForConnection removeObjectForKey:ctostr(connection)];
 
     [dataForConnection setValue:nil forKey:ctostr(connection)];
     [remainingConnections removeObject:connection];

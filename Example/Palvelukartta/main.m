@@ -10,18 +10,6 @@
 #import "Palvelukartta.h"
 
 
-@interface SimpleDelegate: NSObject <PalvelukarttaDelegate>
-@property (nonatomic, retain) Palvelukartta *pk;
-@end
-
-@implementation SimpleDelegate
-@synthesize pk;
-
-- (id) init {
-    self = [super init];
-    return self;
-}
-
 void p(NSString* s) {
     printf("%s", [s UTF8String]);
 }
@@ -50,46 +38,12 @@ void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
     }];
 }
 
-- (void) networkError:(int) unitId {
-    NSLog(@"Network error loading unit %d, aborting", unitId);
-    exit(1);
-}
-
-- (void) unitLoaded:(NSDictionary*) unit {
-    PRINT(@"------------------------------\n");
-    if (pk.debug) {
-        [unit enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            PRINT(@"%@: %@\n", key, obj);
-        }];
-    }
-    PRINT(@"Name: %@\n", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit]);
-    NSString* address = [Palvelukartta localizedStringForProperty:@"street_address" inUnit:unit];
-    if (address != nil) {
-        PRINT(@"Address: %@\n", address);
-    }
-    NSArray* connections = (NSArray *) [unit objectForKey:@"connections"];
-    NSArray* localizedKeys = [NSArray arrayWithObjects:@"name", @"www", nil];
-    [connections enumerateObjectsUsingBlock:^(id connection, NSUInteger idx0, BOOL *stop) {
-        [localizedKeys enumerateObjectsUsingBlock:^(id key, NSUInteger idx, BOOL *stop) {
-            NSString *text = [Palvelukartta localizedStringForProperty:key inUnit:connection];
-            if (text == nil) return;
-            if (idx == 0) PRINT(@"\n\t");
-            if (idx == 1) PRINT(@": ");
-            PRINT(@"%@", text);
-        }];
-    }];
-    PRINT(@"\n");
-}
-@end
-
 int main(int argc, const char * argv[])
 {
 
     @autoreleasepool {
         Palvelukartta *palvelukartta = [[Palvelukartta alloc] init];
-        SimpleDelegate* del = [[SimpleDelegate alloc] init];
-        del.pk = palvelukartta;
-        palvelukartta.delegate = del;
+        //palvelukartta.debug = YES;
         NSMutableArray* arguments = [NSMutableArray arrayWithArray:[[NSProcessInfo processInfo] arguments]];
         [arguments removeObjectAtIndex:0];
         if (arguments.count == 1) {
@@ -99,6 +53,35 @@ int main(int argc, const char * argv[])
             }
         }
 
+        void (^unit_callback)(NSDictionary* unit, NSNumber* unitId, NSError* error) = ^(NSDictionary* unit, NSNumber* unitId, NSError* error) {
+            if (error != nil) {
+                PRINT(@"Error loading unit %@: %@", unitId, error.localizedDescription);
+            }
+            PRINT(@"------------------------------\n");
+            if (palvelukartta.debug) {
+                [unit enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                    PRINT(@"%@: %@\n", key, obj);
+                }];
+            }
+            PRINT(@"Name: %@ (ID: %@)\n", [Palvelukartta localizedStringForProperty:@"name" inUnit:unit], unitId);
+            NSString* address = [Palvelukartta localizedStringForProperty:@"street_address" inUnit:unit];
+            if (address != nil) {
+                PRINT(@"Address: %@\n", address);
+            }
+            NSArray* connections = (NSArray *) [unit objectForKey:@"connections"];
+            NSArray* localizedKeys = [NSArray arrayWithObjects:@"name", @"www", nil];
+            [connections enumerateObjectsUsingBlock:^(id connection, NSUInteger idx0, BOOL *stop) {
+                [localizedKeys enumerateObjectsUsingBlock:^(id key, NSUInteger idx, BOOL *stop) {
+                    NSString *text = [Palvelukartta localizedStringForProperty:key inUnit:connection];
+                    if (text == nil) return;
+                    if (idx == 0) PRINT(@"\n\t");
+                    if (idx == 1) PRINT(@": ");
+                    PRINT(@"%@", text);
+                }];
+            }];
+            PRINT(@"\n");
+        };
+
         void (^service_callback)(NSArray* list, NSError* error) = ^(NSArray* list, NSError* error){
                 if (error != nil) {
                     PRINT(@"%@\n", [error localizedDescription]);
@@ -106,7 +89,7 @@ int main(int argc, const char * argv[])
                 }
                 PRINT(@"Received service list, requesting units...\n");
                 [list enumerateObjectsUsingBlock:^(id object, NSUInteger isx, BOOL *stop) {
-                    [palvelukartta loadUnit:object];
+                    [palvelukartta loadUnit:object withBlock:unit_callback];
                 }];
         };
 
@@ -134,7 +117,7 @@ int main(int argc, const char * argv[])
                 [palvelukartta loadServices:serviceId withBlock:service_callback];
             } else if ([[arguments objectAtIndex:0] isEqual:@"--unit"] && arguments.count == 2) {
                 PRINT(@"Requesting information about unit %d...\n", [[arguments objectAtIndex:1] intValue]);
-                [palvelukartta loadUnit:[NSNumber numberWithInt:[[arguments objectAtIndex:1] intValue]]];
+                [palvelukartta loadUnit:@( ((NSString*)arguments[1]).intValue ) withBlock:unit_callback];
             } else {
                 PRINT(@"Illegal arguments: %@ .\n", arguments);
                 exit(1);
