@@ -29,7 +29,7 @@
 }
 
 - (void) loadAllServices:(void (^) (NSArray*, NSError*)) block;
-- (void) loadServices:(int) ofType;
+- (void) loadServices:(int) ofType withBlock:(void (^) (NSArray*, NSError*)) block;
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
 - (unsigned long) connectionsPending;

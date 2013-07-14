@@ -55,13 +55,6 @@ void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
     exit(1);
 }
 
-- (void) serviceListLoaded:(NSArray*) list {
-    PRINT(@"Received service list, requesting units...\n");
-    [list enumerateObjectsUsingBlock:^(id object, NSUInteger isx, BOOL *stop) {
-        [pk loadUnit:object];
-    }];
-}
-
 - (void) unitLoaded:(NSDictionary*) unit {
     PRINT(@"------------------------------\n");
     if (pk.debug) {
@@ -105,9 +98,21 @@ int main(int argc, const char * argv[])
                 [arguments removeObjectAtIndex:0];
             }
         }
+
+        void (^service_callback)(NSArray* list, NSError* error) = ^(NSArray* list, NSError* error){
+                if (error != nil) {
+                    PRINT(@"%@\n", [error localizedDescription]);
+                    exit(1);
+                }
+                PRINT(@"Received service list, requesting units...\n");
+                [list enumerateObjectsUsingBlock:^(id object, NSUInteger isx, BOOL *stop) {
+                    [palvelukartta loadUnit:object];
+                }];
+        };
+
         if (arguments.count == 0) {
             PRINT(@"Requesting information about public restrooms...\n");
-            [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS];
+            [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS withBlock:service_callback];
         } else {
             if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
                 PRINT(@"Requesting all services...\n");
@@ -126,7 +131,7 @@ int main(int argc, const char * argv[])
             } else if ([[arguments objectAtIndex:0] isEqual:@"--service"] && arguments.count == 2) {
                 int serviceId = [[arguments objectAtIndex:1] intValue];
                 PRINT(@"Requesting information about service %d...\n", serviceId);
-                [palvelukartta loadServices:serviceId];
+                [palvelukartta loadServices:serviceId withBlock:service_callback];
             } else if ([[arguments objectAtIndex:0] isEqual:@"--unit"] && arguments.count == 2) {
                 PRINT(@"Requesting information about unit %d...\n", [[arguments objectAtIndex:1] intValue]);
                 [palvelukartta loadUnit:[NSNumber numberWithInt:[[arguments objectAtIndex:1] intValue]]];

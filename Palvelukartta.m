@@ -73,11 +73,12 @@ NSString* ctostr(NSURLConnection* c);
     callbackForConnection[ctostr(servicesListConnection)] = block;
 }
                               
-- (void) loadServices:(int) ofType {
+- (void) loadServices:(int) ofType withBlock:(void (^) (NSArray*, NSError*)) block {
     NSURL *unitlisturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/%d", self.pkRestURL, ofType]];
     DLOG(@"Requesting service URL %@", unitlisturl);
 
     listConnection=[self newConnection:unitlisturl];
+    callbackForConnection[ctostr(listConnection)] = block;
 }
 
 - (void)connectRetry:(NSTimer*)theTimer
@@ -186,9 +187,10 @@ NSString* ctostr(NSURLConnection* c) {
     if (connection == listConnection) {
         NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
         NSArray *units = [response objectForKey:@"unit_ids"];
-        DLOG(@"received units: %@, delegate: %@", units, delegate);
-        if (delegate != nil) [delegate serviceListLoaded:units];
-
+        void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+        DLOG(@"received units: %@, callback: %@", units, callback);
+        callback(units, nil);
+        [callbackForConnection removeObjectForKey:ctostr(connection)];
         listConnection = nil;
     } else if (connection == servicesListConnection) {
         NSMutableArray* _services = [NSMutableArray arrayWithArray:(NSArray*) _response];
