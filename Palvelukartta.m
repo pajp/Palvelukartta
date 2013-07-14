@@ -197,6 +197,7 @@ NSString* ctostr(NSURLConnection* c) {
             DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
         void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+        [callbackForConnection removeObjectForKey:ctostr(connection)];
         callback(_services, nil);
         servicesListConnection = nil;
     } else {
