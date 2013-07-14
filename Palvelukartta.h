@@ -24,10 +24,11 @@
     NSMutableDictionary *dataForConnection;
     NSMutableDictionary *urlForConnection;
     NSMutableDictionary *attemptsForConnection;
+    NSMutableDictionary *callbackForConnection;
     NSMutableSet *remainingConnections;
 }
 
-- (void) loadAllServices;
+- (void) loadAllServices:(void (^) (NSArray*)) block;
 - (void) loadServices:(int) ofType;
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;
@@ -36,6 +37,7 @@
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit;
 + (NSArray*) sortedServices:(NSArray*) list;
 + (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services;
+
 @property (nonatomic) BOOL debug;
 @property (nonatomic, retain) NSObject *delegate;
 @property (nonatomic, retain) NSString *pkRestURL;

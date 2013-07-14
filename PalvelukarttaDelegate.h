@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 @protocol PalvelukarttaDelegate <NSObject>
-- (void) servicesLoaded:(NSArray*) list;
 - (void) serviceListLoaded:(NSArray*) list;
 - (void) unitLoaded:(NSDictionary*) unit;
 - (void) networkError:(int) unitId;

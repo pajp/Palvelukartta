@@ -50,17 +50,6 @@ void printService(NSDictionary* srv, NSMutableSet* seen, int depth) {
     }];
 }
 
-- (void) servicesLoaded:(NSArray*) list {
-    NSMutableDictionary *services = [[NSMutableDictionary alloc] init];
-    [Palvelukartta populateServiceChildren:list withIdMap:services];
-    NSMutableSet* displayed = [[NSMutableSet alloc] initWithCapacity:list.count];
-
-    [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        printService(obj, displayed, 0);
-    }];
-
-}
-
 - (void) networkError:(int) unitId {
     NSLog(@"Network error loading unit %d, aborting", unitId);
     exit(1);
@@ -122,7 +111,14 @@ int main(int argc, const char * argv[])
         } else {
             if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
                 PRINT(@"Requesting all services...\n");
-                [palvelukartta loadAllServices];
+                [palvelukartta loadAllServices:^(NSArray* list)  {
+                    NSMutableDictionary *services = [[NSMutableDictionary alloc] init];
+                    [Palvelukartta populateServiceChildren:list withIdMap:services];
+                    NSMutableSet* displayed = [[NSMutableSet alloc] initWithCapacity:list.count];
+                    [[Palvelukartta sortedServices:list] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                        printService(obj, displayed, 0);
+                    }];
+                }];
             } else if ([[arguments objectAtIndex:0] isEqual:@"--service"] && arguments.count == 2) {
                 int serviceId = [[arguments objectAtIndex:1] intValue];
                 PRINT(@"Requesting information about service %d...\n", serviceId);
