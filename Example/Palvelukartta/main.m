@@ -111,7 +111,11 @@ int main(int argc, const char * argv[])
         } else {
             if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
                 PRINT(@"Requesting all services...\n");
-                [palvelukartta loadAllServices:^(NSArray* list)  {
+                [palvelukartta loadAllServices:^(NSArray* list, NSError* error)  {
+                    if (error != nil) {
+                        PRINT(@"%@\n", [error localizedDescription]);
+                        exit(1);
+                    }
                     NSMutableDictionary *services = [[NSMutableDictionary alloc] init];
                     [Palvelukartta populateServiceChildren:list withIdMap:services];
                     NSMutableSet* displayed = [[NSMutableSet alloc] initWithCapacity:list.count];

@@ -28,7 +28,7 @@
     NSMutableSet *remainingConnections;
 }
 
-- (void) loadAllServices:(void (^) (NSArray*)) block;
+- (void) loadAllServices:(void (^) (NSArray*, NSError*)) block;
 - (void) loadServices:(int) ofType;
 - (void) loadUnit:(NSNumber*) unitId;
 - (void) cancelAll;

@@ -66,7 +66,7 @@ NSString* ctostr(NSURLConnection* c);
     return connection;
 }
 
-- (void) loadAllServices:(void (^) (NSArray*)) block
+- (void) loadAllServices:(void (^) (NSArray*, NSError*)) block
 {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/", self.pkRestURL]];
     servicesListConnection = [self newConnection:url];
@@ -84,7 +84,8 @@ NSString* ctostr(NSURLConnection* c);
 {
     NSURLConnection *connection = theTimer.userInfo;
     DLOG(@"retrying connection %@", connection);
-    NSNumber *unitId = [unitForConnection valueForKey:ctostr(connection)]; 
+    NSNumber *unitId = [unitForConnection valueForKey:ctostr(connection)];
+    [remainingConnections removeObject:connection];
     NSURLConnection *newConnection = [self newConnection:[urlForConnection valueForKey:ctostr(connection)]];
     [unitForConnection setValue:unitId forKey:ctostr(newConnection)];
     [unitForConnection removeObjectForKey:ctostr(connection)];
@@ -106,20 +107,27 @@ NSString* ctostr(NSURLConnection* c);
 }
 
 // clean up a failed connection
-- (void) failConnection:(NSURLConnection *)connection
+- (void) failConnection:(NSURLConnection *)connection withError:(NSError *) error;
 {
     NSNumber *unit = [unitForConnection valueForKey:ctostr(connection)];
+
+    [connection cancel];
+    [urlForConnection setValue:nil forKey:ctostr(connection)];
+    [attemptsForConnection setValue:nil forKey:ctostr(connection)];
+    [remainingConnections removeObject:connection];
+
+    void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+    if (callback != nil) {
+        DLOG(@"calling callback %@", callback);
+        callback(nil, error);
+        [callbackForConnection removeObjectForKey:ctostr(connection)];
+    }
 
     if (unit == nil) {
         if (delegate != nil) [delegate networkError:-1];
     } else {
         if (delegate != nil) [delegate networkError:[unit intValue]];
     }
-    
-    [connection cancel];
-    [urlForConnection setValue:nil forKey:ctostr(connection)];
-    [attemptsForConnection setValue:nil forKey:ctostr(connection)];
-    [callbackForConnection removeObjectForKey:ctostr(connection)];
 }
 
 
@@ -127,11 +135,11 @@ NSString* ctostr(NSURLConnection* c);
 {
     NSNumber *attempts = [attemptsForConnection valueForKey:ctostr(connection)];
     NSURL *url = [urlForConnection valueForKey:ctostr(connection)];
-    [remainingConnections removeObject:connection];
     DLOG(@"connection fail: connection: %@, attempts: %@, url: %@, error: %@", connection, attempts, url, error);
     if ([attempts intValue] > 3) {
         DLOG(@"giving up on url %@, %@", url, connection);
-        [self failConnection:connection];
+        
+        [self failConnection:connection withError:error];
     } else {
         DLOG(@"connection failed with error %@, attempts=%d", error, [attempts intValue]);
         [NSTimer scheduledTimerWithTimeInterval:[attempts intValue]*2.0 target:self selector:@selector(connectRetry:) userInfo:connection repeats:NO];
@@ -188,8 +196,8 @@ NSString* ctostr(NSURLConnection* c) {
             _services[i] = [NSMutableDictionary dictionaryWithDictionary:_services[i]];
             DLOG(@"service %@: %@", [[_services objectAtIndex:i] objectForKey:@"id"], [[_services objectAtIndex:i] objectForKey:@"name_sv"]);
         }
-        void (^callback)(NSArray*) = callbackForConnection[ctostr(connection)];
-        callback(_services);
+        void (^callback)(NSArray*, NSError*) = callbackForConnection[ctostr(connection)];
+        callback(_services, nil);
         servicesListConnection = nil;
     } else {
         NSNumber *unitId = [unitForConnection objectForKey:[NSString stringWithFormat:@"%p", connection]];
@@ -212,7 +220,7 @@ NSString* ctostr(NSURLConnection* c) {
     NSHTTPURLResponse *hr = (NSHTTPURLResponse*) response;
     if (hr.statusCode != 200) {
         DLOG(@"Error: HTTP response code %ld", (long)hr.statusCode);
-        [self failConnection:connection];
+        [self failConnection:connection withError:[NSError errorWithDomain:@"Palvelukartta error" code:hr.statusCode userInfo:nil]];
     }
     //NSNumber *u = [unitForConnection valueForKey:ctostr(connection)];
     //NSLog(@"connection %@ (unit: %d) response: %d, headers: %@", ctostr(connection), u != nil ? [u intValue] : -1, hr.statusCode, [hr allHeaderFields]);
