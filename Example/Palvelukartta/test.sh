@@ -9,6 +9,6 @@
 ulimit -c unlimited
 $1
 $1 --all-services
-$1 --service 8920
+$1 --service 25402
 echo OK.
 
