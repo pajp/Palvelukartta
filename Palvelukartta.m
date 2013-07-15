@@ -45,8 +45,7 @@ NSString* ctostr(NSURLConnection* c);
     for(connection in remainingConnections){
         DLOG(@"Cancelling URL: %@, connection %@", [urlForConnection objectForKey:ctostr(connection)], connection);
         [connection cancel];
-    }    
-    
+    }
 }
 
 - (void) loadUnit:(NSNumber*) unitIdObj withBlock:(void (^)(NSDictionary*, NSNumber*, NSError *))block {
@@ -60,7 +59,7 @@ NSString* ctostr(NSURLConnection* c);
 - (NSURLConnection*) newConnection:(NSURL*) url {
     NSURLRequest *req = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringCacheData timeoutInterval:60.0];
     NSURLConnection *connection = [[NSURLConnection alloc] initWithRequest:req delegate:self];
-    [urlForConnection setValue:url forKey:ctostr(connection)];
+    urlForConnection[ctostr(connection)] = url;
     [remainingConnections addObject:connection];    
     DLOG(@"PK %@ requesting URL %@ (connection: %@)", self, url, connection);
     return connection;
@@ -85,10 +84,10 @@ NSString* ctostr(NSURLConnection* c);
 {
     NSURLConnection *connection = theTimer.userInfo;
     DLOG(@"retrying connection %@", connection);
-    NSNumber *unitId = [unitForConnection valueForKey:ctostr(connection)];
+    NSNumber *unitId = unitForConnection[ctostr(connection)];
     [remainingConnections removeObject:connection];
     NSURLConnection *newConnection = [self newConnection:[urlForConnection valueForKey:ctostr(connection)]];
-    [unitForConnection setValue:unitId forKey:ctostr(newConnection)];
+    unitForConnection[unitId] = ctostr(newConnection);
     [unitForConnection removeObjectForKey:ctostr(connection)];
     [urlForConnection removeObjectForKey:ctostr(connection)];
     [dataForConnection removeObjectForKey:ctostr(connection)];
@@ -96,25 +95,25 @@ NSString* ctostr(NSURLConnection* c);
     callbackForConnection[ctostr(newConnection)] = callbackForConnection[ctostr(connection)];
     [callbackForConnection removeObjectForKey:ctostr(connection)];
 
-    NSNumber *count = [attemptsForConnection valueForKey:ctostr(connection)];
+    NSNumber *count = attemptsForConnection[ctostr(connection)];
     if (count == nil) {
         count = [NSNumber numberWithInt:2];
     } else {
         count = [NSNumber numberWithInt:count.intValue + 1];
     }
     [attemptsForConnection removeObjectForKey:ctostr(connection)];
-    [attemptsForConnection setValue:count forKey:ctostr(newConnection)];
+    attemptsForConnection[ctostr(newConnection)] = count;
     
 }
 
 // clean up a failed connection
 - (void) failConnection:(NSURLConnection *)connection withError:(NSError *) error;
 {
-    NSNumber *unit = [unitForConnection valueForKey:ctostr(connection)];
+    NSNumber *unit = unitForConnection[ctostr(connection)];
 
     [connection cancel];
-    [urlForConnection setValue:nil forKey:ctostr(connection)];
-    [attemptsForConnection setValue:nil forKey:ctostr(connection)];
+    [urlForConnection removeObjectForKey:ctostr(connection)];
+    [attemptsForConnection removeObjectForKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
 
     if (unit == nil) {
@@ -136,8 +135,8 @@ NSString* ctostr(NSURLConnection* c);
 
 - (void) connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
 {
-    NSNumber *attempts = [attemptsForConnection valueForKey:ctostr(connection)];
-    NSURL *url = [urlForConnection valueForKey:ctostr(connection)];
+    NSNumber *attempts = attemptsForConnection[ctostr(connection)];
+    NSURL *url = urlForConnection[ctostr(connection)];
     DLOG(@"connection fail: connection: %@, attempts: %@, url: %@, error: %@", connection, attempts, url, error);
     if ([attempts intValue] > 3) {
         DLOG(@"giving up on url %@, %@", url, connection);
@@ -156,7 +155,7 @@ NSString* ctostr(NSURLConnection* c) {
 
 - (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)newdata
 {
-    NSMutableData *data = [dataForConnection objectForKey:ctostr(connection)];
+    NSMutableData *data = dataForConnection[ctostr(connection)];
     //NSLog(@"Appended %d bytes to data buffer for %@", [newdata length], connection);
     [data appendData:newdata];
 }
@@ -189,7 +188,7 @@ NSString* ctostr(NSURLConnection* c) {
     if (connection == listConnection) {
         void (^callback)(NSObject*, NSError*) = callbackForConnection[ctostr(connection)];
         NSMutableDictionary *response = [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
-        NSArray *units = [response objectForKey:@"unit_ids"];
+        NSArray *units = response[@"unit_ids"];
         DLOG(@"received units: %@, callback: %@", units, callback);
         callback(units, nil);
         listConnection = nil;
@@ -206,7 +205,7 @@ NSString* ctostr(NSURLConnection* c) {
         servicesListConnection = nil;
     } else {
         void (^callback)(NSDictionary*, NSNumber*, NSError*) = callbackForConnection[ctostr(connection)];
-        NSNumber *unitId = [unitForConnection objectForKey:ctostr(connection)];
+        NSNumber *unitId = unitForConnection[ctostr(connection)];
         if (unitId) {
             NSMutableDictionary *response =  [NSMutableDictionary dictionaryWithDictionary:(NSDictionary*) _response];
             DLOG(@"Unit loaded callback: %@", callback);
@@ -216,8 +215,7 @@ NSString* ctostr(NSURLConnection* c) {
         }
     }
     [callbackForConnection removeObjectForKey:ctostr(connection)];
-
-    [dataForConnection setValue:nil forKey:ctostr(connection)];
+    [dataForConnection removeObjectForKey:ctostr(connection)];
     [remainingConnections removeObject:connection];
     [callbackForConnection removeObjectForKey:ctostr(connection)];
 }
@@ -232,12 +230,12 @@ NSString* ctostr(NSURLConnection* c) {
     //NSNumber *u = [unitForConnection valueForKey:ctostr(connection)];
     //NSLog(@"connection %@ (unit: %d) response: %d, headers: %@", ctostr(connection), u != nil ? [u intValue] : -1, hr.statusCode, [hr allHeaderFields]);
 
-    NSMutableData *data = [dataForConnection objectForKey:ctostr(connection)];
+    NSMutableData *data = dataForConnection[ctostr(connection)];
     if (data) {
         [data setLength:0];
     } else {
         data = [[NSMutableData alloc] init];
-        [dataForConnection setValue:data forKey:ctostr(connection)];
+        dataForConnection[ctostr(connection)] = data;
         //NSLog(@"created new data buffer for connection %@", ctostr(connection));
         
     }
@@ -245,9 +243,9 @@ NSString* ctostr(NSURLConnection* c) {
 
 + (NSString*) localizedStringForProperty:(NSString*) property inUnit:(NSDictionary*) unit {
     NSString* language = [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode];
-    NSString* str = [unit objectForKey:[NSString stringWithFormat:@"%@_%@", property, language]];
+    NSString* str = unit[[NSString stringWithFormat:@"%@_%@", property, language]];
     if (str == nil) {
-        str = [unit objectForKey:[NSString stringWithFormat:@"%@_fi", property]];
+        str = unit[[NSString stringWithFormat:@"%@_fi", property]];
     }
     return str;
 }
@@ -259,24 +257,24 @@ NSString* ctostr(NSURLConnection* c) {
     }];
 }
 
-+ (void) populateServiceChildren:(NSArray*) list withIdMap:(NSDictionary*) services {
++ (void) populateServiceChildren:(NSArray*) list withIdMap:(NSMutableDictionary*) services {
     // first populate a dictionary mapping service IDs to
     // the service dict objects, by enumerating the list
     [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         //NSLog(@"storing service id %@: %@", [obj valueForKey:@"id"], obj);
-        [services setValue:obj forKey:[NSString stringWithFormat:@"%@", [((NSDictionary*) obj) valueForKey:@"id"]]];
+        services[[NSString stringWithFormat:@"%@", [((NSDictionary*) obj) valueForKey:@"id"]]] = obj;
     }];
     // then enumerate the list again, and for each service, lookup the
     // corresponding dict from the mapping generated above, and add that
     // dict as a value in the first service dict
     [list enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-        NSDictionary* srv = (NSDictionary*) obj;
+        NSMutableDictionary* srv = (NSMutableDictionary*) obj;
         NSMutableArray* children = [srv valueForKey:@"children"];
         if (children == nil) {
             children = [[NSMutableArray alloc] init];
-            [srv setValue:children forKey:@"children"];
+            srv[@"children"] = children;
         }
-        NSArray* childIds = (NSArray*) [srv valueForKey:@"child_ids"];
+        NSArray* childIds = (NSArray*) srv[@"child_ids"];
         if (childIds != nil) {
             [childIds enumerateObjectsUsingBlock:^(id childid, NSUInteger idx, BOOL *stop) {
                 NSDictionary* child = [services valueForKey:[NSString stringWithFormat:@"%@", childid]];
