@@ -95,7 +95,7 @@ int main(int argc, const char * argv[])
 
         if (arguments.count == 0) {
             PRINT(@"Requesting information about public restrooms...\n");
-            [palvelukartta loadServices:PK_SERVICE_PUBLIC_TOILETS withBlock:service_callback];
+            [palvelukartta loadServices:PK_V2_SERVICE_PUBLIC_TOILETS withBlock:service_callback];
         } else {
             if ([[arguments objectAtIndex:0] isEqual:@"--all-services"]) {
                 PRINT(@"Requesting all services...\n");

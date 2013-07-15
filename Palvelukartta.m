@@ -24,7 +24,7 @@ NSString* ctostr(NSURLConnection* c);
         urlForConnection = [[NSMutableDictionary alloc] init];
         remainingConnections = [[NSMutableSet alloc] init];
         callbackForConnection = [[NSMutableDictionary alloc] init];
-        self.pkRestURL = @PK_BASE_URL;
+        self.pkRestURL = @PK_V2_BASE_URL;
         if (getenv("PK_BASE_URL") != NULL) {
             self.pkRestURL = [NSString stringWithCString:getenv("PK_BASE_URL") encoding:NSUTF8StringEncoding];
         }
