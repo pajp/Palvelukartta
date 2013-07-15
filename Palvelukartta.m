@@ -53,7 +53,7 @@ NSString* ctostr(NSURLConnection* c);
     NSURL *uniturl = [NSURL URLWithString:[NSString stringWithFormat:@"%@unit/%d", self.pkRestURL, unitId]];
     NSURLConnection *c = [self newConnection:uniturl];
     [unitForConnection setValue:[NSNumber numberWithInt:unitId] forKey:ctostr(c)];
-    callbackForConnection[ctostr(c)] = block;
+    callbackForConnection[ctostr(c)] = [block copy];
 }
 
 - (NSURLConnection*) newConnection:(NSURL*) url {
@@ -69,7 +69,7 @@ NSString* ctostr(NSURLConnection* c);
 {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@service/", self.pkRestURL]];
     servicesListConnection = [self newConnection:url];
-    callbackForConnection[ctostr(servicesListConnection)] = block;
+    callbackForConnection[ctostr(servicesListConnection)] = [block copy];
 }
                               
 - (void) loadServices:(int) ofType withBlock:(void (^) (NSArray*, NSError*)) block {
@@ -77,7 +77,7 @@ NSString* ctostr(NSURLConnection* c);
     DLOG(@"Requesting service URL %@", unitlisturl);
 
     listConnection=[self newConnection:unitlisturl];
-    callbackForConnection[ctostr(listConnection)] = block;
+    callbackForConnection[ctostr(listConnection)] = [block copy];
 }
 
 - (void)connectRetry:(NSTimer*)theTimer
